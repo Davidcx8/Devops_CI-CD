@@ -11,6 +11,7 @@ env:
   PYTHON_VERSION: "3.12"
   LOCAL_IMAGE: "devops-ci-cd-app:test"
   DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY || secrets.DOCKERHUB_REPOSITORY }}
+  RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
 
 jobs:
   ci-cd:
@@ -73,11 +74,9 @@ jobs:
           docker push "${{ steps.image.outputs.remote_image }}:sha-${{ steps.image.outputs.short_sha }}"
 
       - name: Deploy to Render
-        if: github.ref == 'refs/heads/main' && secrets.RENDER_DEPLOY_HOOK_URL != ''
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        if: github.ref == 'refs/heads/main' && env.RENDER_DEPLOY_HOOK_URL != ''
         run: curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK_URL"
 
       - name: Skip Render deploy
-        if: github.ref == 'refs/heads/main' && secrets.RENDER_DEPLOY_HOOK_URL == ''
+        if: github.ref == 'refs/heads/main' && env.RENDER_DEPLOY_HOOK_URL == ''
         run: echo "RENDER_DEPLOY_HOOK_URL is not configured yet. Docker image was published, deploy step skipped."
