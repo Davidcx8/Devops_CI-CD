@@ -130,14 +130,14 @@ El workflow definido en `.github/workflows/ci-cd.yml` se activa con cada `push` 
 5. publica la imagen con tags `latest` y `sha-<commit>`
 6. dispara el despliegue en Render mediante `deploy hook`
 
-## Secrets requeridos en GitHub
+## Configuracion requerida en GitHub
 
-Configura estos secretos en `Settings > Secrets and variables > Actions`:
+Configura estos valores en `Settings > Secrets and variables > Actions`:
 
 - `DOCKERHUB_USERNAME`: usuario de Docker Hub
 - `DOCKERHUB_TOKEN`: access token de Docker Hub
-- `DOCKERHUB_REPOSITORY`: nombre del repositorio en Docker Hub, por ejemplo `devops_ci-cd`
-- `RENDER_DEPLOY_HOOK_URL`: deploy hook generado por Render
+- `DOCKERHUB_REPOSITORY`: variable o secret con el nombre del repositorio en Docker Hub, por ejemplo `devops_ci-cd`
+- `RENDER_DEPLOY_HOOK_URL`: secreto opcional mientras aun no hayas creado Render
 
 ## Despliegue en Render
 
@@ -155,6 +155,8 @@ Una vez creado el servicio:
 1. copia el `Deploy Hook URL`
 2. guardalo como secreto `RENDER_DEPLOY_HOOK_URL` en GitHub
 3. cada push a `main` que pase pruebas actualizara Docker Hub y disparara el despliegue
+
+Si todavia no has creado Render, el workflow seguira funcionando y dejara el despliegue como paso omitido sin fallar.
 
 ## Evidencias para la entrega
 

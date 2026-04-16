@@ -10,6 +10,7 @@ permissions:
 env:
   PYTHON_VERSION: "3.12"
   LOCAL_IMAGE: "devops-ci-cd-app:test"
+  DOCKERHUB_REPOSITORY: ${{ vars.DOCKERHUB_REPOSITORY || secrets.DOCKERHUB_REPOSITORY }}
 
 jobs:
   ci-cd:
@@ -40,18 +41,17 @@ jobs:
         id: image
         run: |
           echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          echo "remote_image=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}" >> "$GITHUB_OUTPUT"
+          echo "remote_image=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKERHUB_REPOSITORY }}" >> "$GITHUB_OUTPUT"
 
       - name: Build Docker image
         run: docker build --tag "${{ env.LOCAL_IMAGE }}" .
 
-      - name: Validate release secrets
+      - name: Validate Docker Hub configuration
         if: github.ref == 'refs/heads/main'
         run: |
           [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ] || { echo "Missing secret: DOCKERHUB_USERNAME"; exit 1; }
           [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ] || { echo "Missing secret: DOCKERHUB_TOKEN"; exit 1; }
-          [ -n "${{ secrets.DOCKERHUB_REPOSITORY }}" ] || { echo "Missing secret: DOCKERHUB_REPOSITORY"; exit 1; }
-          [ -n "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ] || { echo "Missing secret: RENDER_DEPLOY_HOOK_URL"; exit 1; }
+          [ -n "${{ env.DOCKERHUB_REPOSITORY }}" ] || { echo "Missing variable or secret: DOCKERHUB_REPOSITORY"; exit 1; }
 
       - name: Log in to Docker Hub
         if: github.ref == 'refs/heads/main'
@@ -73,7 +73,11 @@ jobs:
           docker push "${{ steps.image.outputs.remote_image }}:sha-${{ steps.image.outputs.short_sha }}"
 
       - name: Deploy to Render
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && secrets.RENDER_DEPLOY_HOOK_URL != ''
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK_URL"
+
+      - name: Skip Render deploy
+        if: github.ref == 'refs/heads/main' && secrets.RENDER_DEPLOY_HOOK_URL == ''
+        run: echo "RENDER_DEPLOY_HOOK_URL is not configured yet. Docker image was published, deploy step skipped."

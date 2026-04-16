@@ -88,6 +88,11 @@ Valores recomendados para este proyecto:
 - `DOCKERHUB_USERNAME=davidcx8`
 - `DOCKERHUB_REPOSITORY=devops_ci-cd`
 
+Nota:
+
+- `DOCKERHUB_REPOSITORY` puede configurarse como `Repository variable` o como `Repository secret`
+- `RENDER_DEPLOY_HOOK_URL` puede dejarse para el final; el workflow no debe fallar mientras aun no exista
+
 ### 4. Configurar el servicio en Render
 
 - crear un Web Service basado en imagen
