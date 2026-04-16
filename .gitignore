@@ -1,0 +1,12 @@
+.venv/
+venv/
+.docker-tmp/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.env
+dist/
+build/
+*.py[cod]

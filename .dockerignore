@@ -1,0 +1,12 @@
+.git
+.github
+.pytest_cache
+.venv
+venv
+__pycache__
+tests
+docs
+AGENTS.md
+README.md
+.env
+.gitignore
